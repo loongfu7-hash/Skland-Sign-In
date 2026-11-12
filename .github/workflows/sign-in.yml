@@ -44,7 +44,7 @@ jobs:
           python - <<'PY'
           import os
           import sys
-
+          import re
           import yaml
 
           config = os.environ.get("SKLAND_CONFIG_YAML", "")
@@ -61,6 +61,22 @@ jobs:
               f.write(config)
               if not config.endswith("\n"):
                   f.write("\n")
+
+          # 按 nickname_seq.txt 拼接显示昵称（序号 0 不加后缀）
+          try:
+              with open("nickname_seq.txt", encoding="utf-8") as sf:
+                  seq = sf.read().strip()
+              suffix = "" if seq == "0" else seq
+              nickname = "魂有栖" + suffix
+              with open("config.yaml", encoding="utf-8") as f:
+                  text = f.read()
+              text = re.sub(r'(nickname:\s*").*(")',
+                            lambda m: m.group(1) + nickname + m.group(2),
+                            text, count=1)
+              with open("config.yaml", "w", encoding="utf-8") as f:
+                  f.write(text)
+          except FileNotFoundError:
+              pass
           PY
 
       - name: Run sign-in
